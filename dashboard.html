@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Student Score Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --indigo: #6366f1; --indigo-dark: #4f46e5; --indigo-light: #e0e7ff;
+    --emerald: #10b981; --amber: #f59e0b; --rose: #ef4444;
+    --slate-900: #0f172a; --slate-700: #334155; --slate-500: #64748b;
+    --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+    --white: #ffffff;
+    --radius: 16px; --radius-sm: 10px;
+    --shadow: 0 4px 24px rgba(99,102,241,0.10);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--slate-50); color: var(--slate-900); }
+
+  header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
+    padding: 28px 40px; display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.18);
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.15); display: grid; place-items: center; font-size: 22px; }
+  .logo-text h1 { font-size: 20px; font-weight: 600; color: #fff; }
+  .logo-text p  { font-size: 13px; color: rgba(255,255,255,0.6); }
+  nav a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 18px; border-radius: 8px; transition: background .2s; }
+  nav a:hover, nav a.active { background: rgba(255,255,255,0.15); color: #fff; }
+
+  .page { max-width: 1120px; margin: 0 auto; padding: 36px 24px; }
+
+  /* Section title */
+  .section-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; }
+
+  /* Model performance table */
+  .perf-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--white); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+    margin-bottom: 32px;
+  }
+  .perf-table th {
+    background: #1e1b4b; color: rgba(255,255,255,0.85);
+    padding: 14px 20px; text-align: left; font-size: 13px; font-weight: 500;
+  }
+  .perf-table td { padding: 14px 20px; border-bottom: 1px solid var(--slate-100); font-size: 14px; }
+  .perf-table tr:last-child td { border-bottom: none; }
+  .perf-table tr.best-row td { background: var(--indigo-light); font-weight: 500; }
+  .mono { font-family: 'DM Mono', monospace; font-size: 13px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-best { background: var(--emerald); color: #fff; }
+
+  /* R2 bar inside table */
+  .r2-cell { display: flex; align-items: center; gap: 10px; }
+  .r2-bar-bg { flex: 1; height: 6px; background: var(--slate-200); border-radius: 4px; }
+  .r2-bar    { height: 6px; border-radius: 4px; background: var(--indigo); }
+
+  /* Chart grid */
+  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .chart-card {
+    background: var(--white); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 24px;
+    border: 1px solid var(--slate-200);
+  }
+  .chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--slate-700); }
+  .chart-card img { width: 100%; border-radius: 8px; }
+  .chart-full { grid-column: 1 / -1; }
+
+  /* Insight strip */
+  .insight-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-bottom: 32px;
+  }
+  .insight-card {
+    background: var(--white); border: 1px solid var(--slate-200);
+    border-radius: var(--radius-sm); padding: 18px 20px;
+    box-shadow: var(--shadow); border-left: 4px solid var(--indigo);
+  }
+  .insight-card.emerald { border-left-color: var(--emerald); }
+  .insight-card.amber   { border-left-color: var(--amber); }
+  .insight-card .i-label { font-size: 12px; color: var(--slate-500); font-weight: 500; margin-bottom: 6px; }
+  .insight-card .i-val   { font-size: 15px; font-weight: 600; }
+
+  @media (max-width: 800px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .insight-strip { grid-template-columns: 1fr; }
+    header { padding: 18px 20px; flex-wrap: wrap; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-text">
+      <h1>Student Score Predictor</h1>
+      <p>ML-powered math performance prediction</p>
+    </div>
+  </div>
+  <nav>
+    <a href="/">Predict</a>
+    <a href="/dashboard" class="active">Dashboard</a>
+  </nav>
+</header>
+
+<div class="page">
+
+  <div class="section-title">📊 Model Performance Comparison</div>
+
+  <table class="perf-table">
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>R² Score</th>
+        <th>RMSE</th>
+        <th>CV R² (5-fold)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for name, res in model_results.items() %}
+      <tr {% if name == best_model %}class="best-row"{% endif %}>
+        <td><strong>{{ name }}</strong></td>
+        <td>
+          <div class="r2-cell">
+            <span class="mono">{{ res.R2 }}</span>
+            <div class="r2-bar-bg"><div class="r2-bar" style="width:{{ (res.R2*100)|int }}%"></div></div>
+          </div>
+        </td>
+        <td class="mono">{{ res.RMSE }}</td>
+        <td class="mono">{{ res.CV_R2 }}</td>
+        <td>
+          {% if name == best_model %}
+          <span class="badge badge-best">✓ Best</span>
+          {% else %}
+          <span style="font-size:13px;color:var(--slate-500)">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Key insights -->
+  <div class="section-title">💡 Key Insights</div>
+  <div class="insight-strip">
+    <div class="insight-card">
+      <div class="i-label">Strongest predictor</div>
+      <div class="i-val">Reading & Writing scores</div>
+    </div>
+    <div class="insight-card emerald">
+      <div class="i-label">Test prep impact</div>
+      <div class="i-val">+5–7 pts on avg math score</div>
+    </div>
+    <div class="insight-card amber">
+      <div class="i-label">Standard lunch advantage</div>
+      <div class="i-val">+11 pts vs free/reduced</div>
+    </div>
+  </div>
+
+  <!-- Hyperparameter Tuning Results -->
+  {% if tuning_params %}
+  <div class="section-title">⚙️ Hyperparameter Tuning (GridSearchCV)</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+    {% for model_name, params in tuning_params.items() %}
+    <div style="background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:18px 20px;box-shadow:var(--shadow);">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--indigo);">{{ model_name }}</div>
+      {% for k, v in params.items() %}
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--slate-100);">
+        <span style="color:var(--slate-500);">{{ k }}</span>
+        <span style="font-family:monospace;font-weight:500;">{{ v }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- API Section -->
+  <div class="section-title">🔌 REST API</div>
+  <div style="background:#1e1b4b;border-radius:var(--radius-sm);padding:20px 24px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="color:#fff;font-size:15px;font-weight:500;margin-bottom:4px;">Live API endpoint available</div>
+      <div style="color:rgba(255,255,255,.6);font-size:13px;font-family:monospace;">POST /api/predict &nbsp;·&nbsp; GET /api/models</div>
+    </div>
+    <a href="/api/docs" style="background:var(--indigo);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;">View API Docs →</a>
+  </div>
+
+  <!-- Charts -->
+  <div class="section-title">📈 Visual Analysis</div>
+  <div class="chart-grid">
+
+    <div class="chart-card">
+      <h3>Model Comparison — R² Score</h3>
+      <img src="/static/charts/model_comparison.png" alt="Model comparison">
+    </div>
+
+    <div class="chart-card">
+      <h3>Feature Importance (Random Forest)</h3>
+      <img src="/static/charts/feature_importance.png" alt="Feature importance">
+    </div>
+
+    <div class="chart-card chart-full">
+      <h3>Score Distributions (Reading · Writing · Math)</h3>
+      <img src="/static/charts/distributions.png" alt="Score distributions">
+    </div>
+
+    <div class="chart-card">
+      <h3>Correlation Heatmap</h3>
+      <img src="/static/charts/correlation.png" alt="Correlation heatmap">
+    </div>
+
+    <div class="chart-card">
+      <h3>Test Preparation Effect on Math Score</h3>
+      <img src="/static/charts/test_prep.png" alt="Test prep effect">
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
