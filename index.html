@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Score Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --indigo: #6366f1; --indigo-dark: #4f46e5; --indigo-light: #e0e7ff;
+    --emerald: #10b981; --amber: #f59e0b; --rose: #ef4444;
+    --slate-900: #0f172a; --slate-700: #334155; --slate-500: #64748b;
+    --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+    --white: #ffffff;
+    --radius: 16px; --radius-sm: 10px;
+    --shadow: 0 4px 24px rgba(99,102,241,0.10);
+    --shadow-lg: 0 8px 40px rgba(99,102,241,0.15);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--slate-50);
+    min-height: 100vh;
+    color: var(--slate-900);
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
+    padding: 28px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.18);
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,0.15);
+    display: grid; place-items: center;
+    font-size: 22px;
+  }
+  .logo-text h1 { font-size: 20px; font-weight: 600; color: #fff; }
+  .logo-text p  { font-size: 13px; color: rgba(255,255,255,0.6); }
+  nav a {
+    color: rgba(255,255,255,0.75); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    padding: 8px 18px; border-radius: 8px;
+    transition: background .2s, color .2s;
+  }
+  nav a:hover, nav a.active { background: rgba(255,255,255,0.15); color: #fff; }
+
+  /* ── Layout ── */
+  .page { max-width: 1120px; margin: 0 auto; padding: 36px 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 380px; gap: 28px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 28px;
+    border: 1px solid var(--slate-200);
+  }
+  .card-title {
+    font-size: 15px; font-weight: 600; color: var(--slate-700);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title span { font-size: 18px; }
+
+  /* ── Model selector ── */
+  .model-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+  }
+  .model-tab {
+    padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--slate-200);
+    background: var(--slate-50); cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--slate-500); transition: all .2s;
+    display: flex; flex-direction: column; gap: 2px; align-items: center;
+  }
+  .model-tab .tab-r2 { font-size: 11px; font-family: 'DM Mono', monospace; }
+  .model-tab input[type=radio] { display: none; }
+  .model-tab:has(input:checked),
+  .model-tab.selected {
+    background: var(--indigo-light); border-color: var(--indigo);
+    color: var(--indigo-dark);
+  }
+  .best-badge {
+    font-size: 10px; background: var(--emerald); color: #fff;
+    padding: 1px 6px; border-radius: 20px; font-weight: 600;
+  }
+
+  /* ── Form fields ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+  label { font-size: 13px; font-weight: 500; color: var(--slate-700); }
+  select, input[type=number] {
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--slate-200);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    background: var(--slate-50); color: var(--slate-900);
+    transition: border-color .2s, box-shadow .2s; outline: none; width: 100%;
+  }
+  select:focus, input[type=number]:focus {
+    border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+  }
+
+  /* ── Submit btn ── */
+  .btn-predict {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--indigo-dark) 100%);
+    color: #fff; font-size: 16px; font-weight: 600; border: none;
+    cursor: pointer; margin-top: 18px; letter-spacing: .3px;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+  }
+  .btn-predict:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.45); }
+  .btn-predict:active { transform: translateY(0); }
+
+  /* ── Result card ── */
+  .result-card {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    border-radius: var(--radius); padding: 28px; color: #fff;
+    display: flex; flex-direction: column; gap: 16px;
+    box-shadow: var(--shadow-lg);
+  }
+  .result-label { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 500; }
+  .result-score { font-size: 64px; font-weight: 300; line-height: 1; }
+  .result-score sup { font-size: 24px; font-weight: 500; vertical-align: super; }
+  .grade-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 52px; height: 52px; border-radius: 50%;
+    font-size: 22px; font-weight: 700;
+  }
+  .confidence-bar-wrap { background: rgba(255,255,255,.15); border-radius: 8px; height: 8px; }
+  .confidence-bar { height: 8px; border-radius: 8px; background: var(--emerald); }
+  .range-text { font-size: 13px; color: rgba(255,255,255,.7); font-family: 'DM Mono', monospace; }
+  .model-info { font-size: 12px; color: rgba(255,255,255,.5); }
+
+  /* ── Placeholder ── */
+  .result-placeholder {
+    border: 2px dashed var(--slate-200); border-radius: var(--radius);
+    padding: 40px 28px; text-align: center; color: var(--slate-500);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .result-placeholder .icon { font-size: 40px; }
+  .result-placeholder p { font-size: 14px; }
+
+  /* ── Stats strip ── */
+  .stats-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--slate-200);
+    border-radius: var(--radius-sm); padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .stat-card .s-label { font-size: 12px; color: var(--slate-500); font-weight: 500; }
+  .stat-card .s-val   { font-size: 22px; font-weight: 600; margin-top: 4px; }
+  .stat-card .s-sub   { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
+
+  /* ── History ── */
+  .history-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .history-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--slate-50); border: 1px solid var(--slate-200);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 13px;
+  }
+  .h-left { display: flex; flex-direction: column; gap: 2px; }
+  .h-model { font-size: 11px; color: var(--slate-500); }
+  .h-score { font-weight: 600; font-size: 20px; }
+  .h-grade { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .no-history { color: var(--slate-500); font-size: 13px; text-align: center; padding: 12px; }
+
+  /* ── Error ── */
+  .error-box {
+    background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm);
+    padding: 14px 18px; color: var(--rose); font-size: 14px; margin-top: 16px;
+  }
+
+  /* ── Section header ── */
+  .section-header { margin-bottom: 20px; }
+  .section-header h2 { font-size: 22px; font-weight: 600; }
+  .section-header p  { font-size: 14px; color: var(--slate-500); margin-top: 4px; }
+
+  /* ── Prediction charts ── */
+  .charts-section { display: flex; flex-direction: column; gap: 16px; }
+  .chart-card-pred {
+    background: var(--white); border: 1px solid var(--slate-200);
+    border-radius: var(--radius); padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .chart-card-pred h4 {
+    font-size: 13px; font-weight: 600; color: var(--slate-500);
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px;
+  }
+  .gauge-wrap { position: relative; width: 180px; margin: 0 auto; }
+  .gauge-wrap canvas { display: block; }
+  .gauge-center {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    text-align: center; pointer-events: none;
+  }
+  .gauge-center .gc-score { font-size: 32px; font-weight: 300; line-height: 1; color: var(--slate-900); }
+  .gauge-center .gc-label { font-size: 12px; color: var(--slate-500); }
+  .perc-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .perc-bar-bg { flex: 1; height: 10px; background: var(--slate-100); border-radius: 6px; overflow: hidden; }
+  .perc-bar    { height: 10px; border-radius: 6px; transition: width 1s ease; }
+  .perc-label  { font-size: 13px; font-weight: 600; min-width: 40px; text-align: right; }
+  .perc-name   { font-size: 13px; color: var(--slate-500); min-width: 52px; }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .stats-strip { grid-template-columns: 1fr 1fr; }
+    header { padding: 18px 20px; flex-wrap: wrap; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-text">
+      <h1>Student Score Predictor</h1>
+      <p>ML-powered math performance prediction</p>
+    </div>
+  </div>
+  <nav>
+    <a href="/" class="active">Predict</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/api/docs">API Docs</a>
+  </nav>
+</header>
+
+<div class="page">
+
+  <!-- Stats strip -->
+  <div class="stats-strip">
+    {% set best = model_results[best_model] %}
+    <div class="stat-card">
+      <div class="s-label">Best Model</div>
+      <div class="s-val" style="color:var(--indigo); font-size:15px;">{{ best_model }}</div>
+      <div class="s-sub">auto-selected</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">R² Score</div>
+      <div class="s-val" style="color:var(--emerald)">{{ best.R2 }}</div>
+      <div class="s-sub">accuracy</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">RMSE</div>
+      <div class="s-val" style="color:var(--amber)">{{ best.RMSE }}</div>
+      <div class="s-sub">avg error pts</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Models Available</div>
+      <div class="s-val">{{ model_results|length }}</div>
+      <div class="s-sub">compare & choose</div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- LEFT: Form -->
+    <div>
+      <div class="section-header">
+        <h2>Predict Math Score</h2>
+        <p>Fill in all student details for the most accurate prediction</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🤖</span> Choose Model</div>
+        <div class="model-tabs">
+          {% for name, res in model_results.items() %}
+          <label class="model-tab {% if selected_model == name or (not selected_model and name == best_model) %}selected{% endif %}">
+            <input type="radio" name="selected_model_display" value="{{ name }}"
+              {% if selected_model == name or (not selected_model and name == best_model) %}checked{% endif %}>
+            {{ name }}
+            {% if name == best_model %}<span class="best-badge">BEST</span>{% endif %}
+            <span class="tab-r2">R²={{ res.R2 }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <form action="/predict" method="post" id="predForm">
+          <!-- Hidden model field synced from tabs -->
+          <input type="hidden" name="selected_model" id="selectedModelInput"
+                 value="{{ selected_model or best_model }}">
+
+          <div class="card-title" style="margin-top:8px;"><span>👤</span> Student Details</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Gender</label>
+              <select name="gender" required>
+                <option value="">Select...</option>
+                <option value="male"   {% if form and form.gender=='male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if form and form.gender=='female' %}selected{% endif %}>Female</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Race / Ethnicity</label>
+              <select name="race_ethnicity" required>
+                <option value="">Select...</option>
+                {% for g in ['group A','group B','group C','group D','group E'] %}
+                <option value="{{ g }}" {% if form and form.race_ethnicity==g %}selected{% endif %}>{{ g|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group full">
+              <label>Parental Level of Education</label>
+              <select name="parental_level_of_education" required>
+                <option value="">Select...</option>
+                {% for edu in ["some high school","high school","some college","associate's degree","bachelor's degree","master's degree"] %}
+                <option value="{{ edu }}" {% if form and form.parental_level_of_education==edu %}selected{% endif %}>{{ edu|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Lunch Type</label>
+              <select name="lunch" required>
+                <option value="">Select...</option>
+                <option value="standard"     {% if form and form.lunch=='standard' %}selected{% endif %}>Standard</option>
+                <option value="free/reduced" {% if form and form.lunch=='free/reduced' %}selected{% endif %}>Free / Reduced</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Test Preparation Course</label>
+              <select name="test_preparation_course" required>
+                <option value="">Select...</option>
+                <option value="none"      {% if form and form.test_preparation_course=='none' %}selected{% endif %}>None</option>
+                <option value="completed" {% if form and form.test_preparation_course=='completed' %}selected{% endif %}>Completed</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Reading Score (0–100)</label>
+              <input type="number" name="reading_score" min="0" max="100"
+                     placeholder="e.g. 72" required
+                     value="{{ form.reading_score if form else '' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Writing Score (0–100)</label>
+              <input type="number" name="writing_score" min="0" max="100"
+                     placeholder="e.g. 68" required
+                     value="{{ form.writing_score if form else '' }}">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-predict">⚡ Predict Math Score</button>
+        </form>
+
+        {% if error %}
+        <div class="error-box">⚠ {{ error }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: Results + History -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- Result -->
+      {% if prediction is defined %}
+      <div class="result-card">
+        <div class="result-label">Predicted Math Score</div>
+        <div style="display:flex;align-items:flex-end;gap:16px;">
+          <div class="result-score">{{ prediction }}<sup>/100</sup></div>
+          <div class="grade-badge" style="background:{{ grade_color }}20;color:{{ grade_color }};border:2px solid {{ grade_color }}">
+            {{ grade }}
+          </div>
+        </div>
+        <div>
+          <div class="range-text">Confidence range: {{ low }} – {{ high }}</div>
+          <div class="confidence-bar-wrap" style="margin-top:8px;">
+            <div class="confidence-bar" style="width:{{ prediction }}%"></div>
+          </div>
+        </div>
+        <div class="model-info">
+          Model: {{ selected_model }} &nbsp;·&nbsp; R² = {{ r2 }}
+        </div>
+      </div>
+
+      {% else %}
+      <div class="result-placeholder">
+        <div class="icon">📊</div>
+        <p>Fill in the form and click <strong>Predict</strong> to see the result</p>
+      </div>
+      {% endif %}
+
+      <!-- Prediction Charts (only after prediction) -->
+      {% if prediction is defined %}
+      <div class="charts-section">
+
+        <!-- Chart 1: Score Gauge -->
+        <div class="chart-card-pred">
+          <h4>📊 Score Gauge</h4>
+          <div class="gauge-wrap">
+            <canvas id="gaugeChart" width="180" height="110"></canvas>
+            <div class="gauge-center">
+              <div class="gc-score">{{ prediction }}</div>
+              <div class="gc-label">/ 100</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart 2: Subject Comparison -->
+        <div class="chart-card-pred">
+          <h4>📚 Subject Score Comparison</h4>
+          <canvas id="subjectChart" height="130"></canvas>
+        </div>
+
+        <!-- Chart 3: Performance Breakdown -->
+        <div class="chart-card-pred">
+          <h4>🎯 Performance vs Averages</h4>
+          {% set reading_val = form.reading_score|float %}
+          {% set writing_val = form.writing_score|float %}
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--slate-500);margin-bottom:4px;">
+                <span>Math (Predicted)</span><span style="font-weight:600;color:var(--indigo)">{{ prediction }}</span>
+              </div>
+              <div class="perc-bar-bg"><div class="perc-bar" style="width:{{ prediction }}%;background:var(--indigo)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--slate-500);margin-bottom:4px;">
+                <span>Reading (Input)</span><span style="font-weight:600;color:var(--emerald)">{{ form.reading_score }}</span>
+              </div>
+              <div class="perc-bar-bg"><div class="perc-bar" style="width:{{ form.reading_score }}%;background:var(--emerald)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--slate-500);margin-bottom:4px;">
+                <span>Writing (Input)</span><span style="font-weight:600;color:var(--amber)">{{ form.writing_score }}</span>
+              </div>
+              <div class="perc-bar-bg"><div class="perc-bar" style="width:{{ form.writing_score }}%;background:var(--amber)"></div></div>
+            </div>
+            <div style="margin-top:4px;padding-top:10px;border-top:1px solid var(--slate-100);font-size:12px;color:var(--slate-500);">
+              Dataset averages → Math: 66.1 &nbsp;·&nbsp; Reading: 69.2 &nbsp;·&nbsp; Writing: 68.1
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SHAP Explanation Panel -->
+      {% if shap_contribs %}
+      <div class="card">
+        <div class="card-title"><span>🧠</span> Why this prediction?</div>
+        <div style="font-size:12px;color:var(--slate-500);margin-bottom:14px;">
+          Baseline avg student: <strong>{{ mean_math }}</strong> &nbsp;·&nbsp;
+          Your score: <strong>{{ prediction }}</strong> &nbsp;·&nbsp;
+          Gap: <strong style="color:{% if prediction > mean_math %}var(--emerald){% else %}var(--rose){% endif %}">
+            {% if prediction > mean_math %}+{% endif %}{{ "%.1f"|format(prediction - mean_math) }}
+          </strong>
+        </div>
+        {% for c in shap_contribs %}
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:13px;color:var(--slate-700);font-weight:500;">{{ c.label }}</span>
+            <span style="font-size:13px;font-weight:600;color:{% if c.direction == 'positive' %}#10b981{% else %}#ef4444{% endif %};">
+              {% if c.direction == 'positive' %}+{% endif %}{{ c.contribution }}
+            </span>
+          </div>
+          <div style="background:var(--slate-100);border-radius:6px;height:7px;overflow:hidden;">
+            {% set bar_w = [c.abs * 5, 100]|min %}
+            <div style="height:7px;border-radius:6px;background:{% if c.direction == 'positive' %}#10b981{% else %}#ef4444{% endif %};width:{{ bar_w }}%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+        <div style="font-size:11px;color:var(--slate-500);margin-top:12px;padding-top:10px;border-top:1px solid var(--slate-200);">
+          Green = boosted score above average &nbsp;·&nbsp; Red = pulled score below average
+        </div>
+      </div>
+      {% endif %}
+
+      {% endif %}
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between;">
+          <span style="display:flex;align-items:center;gap:8px;"><span>🕐</span> Recent Predictions</span>
+          {% if history %}
+          <a href="/clear_history" style="font-size:12px;color:var(--slate-500);text-decoration:none;">Clear</a>
+          {% endif %}
+        </div>
+        <div class="history-list">
+          {% if history %}
+            {% for h in history %}
+            <div class="history-item">
+              <div class="h-left">
+                <div class="h-model">{{ h.model }}</div>
+                <div style="font-size:13px;color:var(--slate-500)">
+                  R={{ h.reading }} · W={{ h.writing }} · {{ h.prep }}
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="h-score">{{ h.prediction }}</div>
+                <div class="h-grade" style="
+                  {% if h.grade == 'A' %}background:#d1fae5;color:#065f46;
+                  {% elif h.grade == 'B' %}background:#e0e7ff;color:#3730a3;
+                  {% elif h.grade == 'C' %}background:#fef3c7;color:#92400e;
+                  {% elif h.grade == 'D' %}background:#ffedd5;color:#9a3412;
+                  {% else %}background:#fee2e2;color:#991b1b;{% endif %}
+                ">{{ h.grade }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="no-history">No predictions yet</div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  // Sync model tab clicks → hidden input
+  document.querySelectorAll('.model-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.model-tab').forEach(t => t.classList.remove('selected'));
+      tab.classList.add('selected');
+      const val = tab.querySelector('input').value;
+      document.getElementById('selectedModelInput').value = val;
+    });
+  });
+
+  {% if prediction is defined %}
+  const predicted = {{ prediction }};
+  const reading   = {{ form.reading_score }};
+  const writing   = {{ form.writing_score }};
+  const gradeColor = "{{ grade_color }}";
+
+  // ── Chart 1: Gauge (doughnut half) ──────────────────────────────────────
+  const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
+  const remaining = 100 - predicted;
+  new Chart(gaugeCtx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [predicted, remaining, 100],
+        backgroundColor: [gradeColor, '#e2e8f0', 'transparent'],
+        borderWidth: 0,
+        circumference: 180,
+        rotation: 270,
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: '72%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { duration: 900, easing: 'easeOutQuart' }
+    }
+  });
+
+  // ── Chart 2: Subject bar comparison ─────────────────────────────────────
+  const subCtx = document.getElementById('subjectChart').getContext('2d');
+  new Chart(subCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Math (Predicted)', 'Reading', 'Writing'],
+      datasets: [
+        {
+          label: 'This Student',
+          data: [predicted, reading, writing],
+          backgroundColor: ['#6366f1cc', '#10b981cc', '#f59e0bcc'],
+          borderRadius: 6,
+          borderSkipped: false,
+        },
+        {
+          label: 'Class Average',
+          data: [66.1, 69.2, 68.1],
+          backgroundColor: ['#6366f122', '#10b98122', '#f59e0b22'],
+          borderColor:     ['#6366f1',   '#10b981',   '#f59e0b'],
+          borderWidth: 1.5,
+          borderRadius: 6,
+          borderSkipped: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          min: 0, max: 100,
+          grid: { color: '#f1f5f9' },
+          ticks: { font: { size: 11 } }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { callbacks: {
+          label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
+        }}
+      },
+      animation: { duration: 800, easing: 'easeOutQuart' }
+    }
+  });
+  {% endif %}
+</script>
+</body>
+</html>

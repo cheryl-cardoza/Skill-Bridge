@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Docs — Student Score Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --indigo:#6366f1;--indigo-dark:#4f46e5;--indigo-light:#e0e7ff;
+    --emerald:#10b981;--amber:#f59e0b;--rose:#ef4444;
+    --slate-900:#0f172a;--slate-700:#334155;--slate-500:#64748b;
+    --slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+    --white:#ffffff;--radius:16px;--radius-sm:10px;
+    --shadow:0 4px 24px rgba(99,102,241,.10);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--slate-50);color:var(--slate-900);}
+  header{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#4338ca 100%);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 24px rgba(0,0,0,.18);}
+  .logo{display:flex;align-items:center;gap:14px;}
+  .logo-icon{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:22px;}
+  .logo-text h1{font-size:20px;font-weight:600;color:#fff;}
+  .logo-text p{font-size:13px;color:rgba(255,255,255,.6);}
+  nav a{color:rgba(255,255,255,.75);text-decoration:none;font-size:14px;font-weight:500;padding:8px 18px;border-radius:8px;transition:background .2s;}
+  nav a:hover,nav a.active{background:rgba(255,255,255,.15);color:#fff;}
+  .page{max-width:900px;margin:0 auto;padding:36px 24px;}
+  .card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;border:1px solid var(--slate-200);margin-bottom:24px;}
+  h2{font-size:20px;font-weight:600;margin-bottom:6px;}
+  h3{font-size:16px;font-weight:600;margin-bottom:12px;color:var(--slate-700);}
+  p{font-size:14px;color:var(--slate-500);line-height:1.6;margin-bottom:12px;}
+  .method-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;margin-right:8px;}
+  .badge-post{background:#fef3c7;color:#92400e;}
+  .badge-get{background:#d1fae5;color:#065f46;}
+  .endpoint-url{font-family:'DM Mono',monospace;font-size:14px;color:var(--indigo-dark);font-weight:500;}
+  pre{background:#1e1b4b;color:#e2e8f0;border-radius:var(--radius-sm);padding:18px 20px;font-family:'DM Mono',monospace;font-size:13px;overflow-x:auto;margin:12px 0;line-height:1.6;}
+  .field-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;}
+  .field-table th{text-align:left;padding:8px 12px;background:var(--slate-50);color:var(--slate-500);font-weight:500;border-bottom:1px solid var(--slate-200);}
+  .field-table td{padding:8px 12px;border-bottom:1px solid var(--slate-100);color:var(--slate-700);}
+  .field-table tr:last-child td{border-bottom:none;}
+  .req{color:var(--rose);font-size:11px;font-weight:600;}
+  .opt{color:var(--slate-500);font-size:11px;}
+  code{font-family:'DM Mono',monospace;background:var(--slate-100);padding:2px 6px;border-radius:4px;font-size:12px;}
+  .try-section{margin-top:16px;}
+  .try-btn{background:var(--indigo);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s;}
+  .try-btn:hover{background:var(--indigo-dark);}
+  #api-result{margin-top:16px;display:none;}
+  .divider{border:none;border-top:1px solid var(--slate-200);margin:20px 0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-text">
+      <h1>Student Score Predictor</h1>
+      <p>ML-powered math performance prediction</p>
+    </div>
+  </div>
+  <nav>
+    <a href="/">Predict</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/api/docs" class="active">API Docs</a>
+  </nav>
+</header>
+
+<div class="page">
+
+  <div class="card">
+    <h2>REST API Reference</h2>
+    <p>All endpoints return JSON. Base URL: <code>http://localhost:5000</code></p>
+    <p>No authentication required for local use.</p>
+  </div>
+
+  <!-- Endpoint 1: POST /api/predict -->
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <span class="method-badge badge-post">POST</span>
+      <span class="endpoint-url">/api/predict</span>
+    </div>
+    <p>Predict a student's math score and get a full explanation of what drove the prediction.</p>
+
+    <h3>Request body (JSON)</h3>
+    <table class="field-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Values</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>gender</td><td>string</td><td><code>male</code> / <code>female</code></td><td><span class="req">required</span></td></tr>
+        <tr><td>race_ethnicity</td><td>string</td><td><code>group A</code> … <code>group E</code></td><td><span class="req">required</span></td></tr>
+        <tr><td>parental_level_of_education</td><td>string</td><td><code>some high school</code>, <code>high school</code>, <code>some college</code>, <code>associate's degree</code>, <code>bachelor's degree</code>, <code>master's degree</code></td><td><span class="req">required</span></td></tr>
+        <tr><td>lunch</td><td>string</td><td><code>standard</code> / <code>free/reduced</code></td><td><span class="req">required</span></td></tr>
+        <tr><td>test_preparation_course</td><td>string</td><td><code>none</code> / <code>completed</code></td><td><span class="req">required</span></td></tr>
+        <tr><td>reading_score</td><td>number</td><td>0 – 100</td><td><span class="req">required</span></td></tr>
+        <tr><td>writing_score</td><td>number</td><td>0 – 100</td><td><span class="req">required</span></td></tr>
+        <tr><td>model</td><td>string</td><td><code>Linear Regression</code>, <code>Ridge Regression</code>, <code>Random Forest</code>, <code>Gradient Boosting</code></td><td><span class="opt">optional</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Example request</h3>
+    <pre>{
+  "gender": "female",
+  "race_ethnicity": "group C",
+  "parental_level_of_education": "bachelor's degree",
+  "lunch": "standard",
+  "test_preparation_course": "completed",
+  "reading_score": 75,
+  "writing_score": 80
+}</pre>
+
+    <h3>Example response</h3>
+    <pre>{
+  "success": true,
+  "prediction": 81.4,
+  "grade": "B",
+  "confidence": { "low": 76, "high": 87 },
+  "model_used": "Linear Regression",
+  "model_r2": 0.8838,
+  "model_rmse": 5.32,
+  "baseline_mean": 66.09,
+  "explanation": [
+    { "feature": "Reading Score",  "contribution": 8.2,  "direction": "positive" },
+    { "feature": "Writing Score",  "contribution": 5.1,  "direction": "positive" },
+    { "feature": "Lunch Type",     "contribution": 3.4,  "direction": "positive" },
+    { "feature": "Test Prep Course","contribution": 2.8, "direction": "positive" },
+    { "feature": "Gender",         "contribution": -0.4, "direction": "negative" }
+  ],
+  "all_models": {
+    "Linear Regression":  { "R2": 0.8838, "RMSE": 5.32 },
+    "Random Forest":      { "R2": 0.8549, "RMSE": 5.94 },
+    "Gradient Boosting":  { "R2": 0.8709, "RMSE": 5.61 },
+    "Ridge Regression":   { "R2": 0.8837, "RMSE": 5.32 }
+  }
+}</pre>
+
+    <hr class="divider">
+    <div class="try-section">
+      <h3>Try it live</h3>
+      <p>Sends a sample request to your running Flask app.</p>
+      <button class="try-btn" onclick="tryApi()">Send sample request</button>
+      <div id="api-result">
+        <pre id="api-output" style="margin-top:12px;"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Endpoint 2: GET /api/models -->
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <span class="method-badge badge-get">GET</span>
+      <span class="endpoint-url">/api/models</span>
+    </div>
+    <p>Returns all available models, their performance metrics, hyperparameter tuning results, and feature names.</p>
+
+    <h3>Example response</h3>
+    <pre>{
+  "best_model": "Linear Regression",
+  "models": {
+    "Linear Regression":  { "R2": 0.8838, "RMSE": 5.32, "CV_R2": 0.8637 },
+    "Ridge Regression":   { "R2": 0.8837, "RMSE": 5.32, "CV_R2": 0.8637 },
+    "Random Forest":      { "R2": 0.8549, "RMSE": 5.94, "CV_R2": 0.8444 },
+    "Gradient Boosting":  { "R2": 0.8709, "RMSE": 5.61, "CV_R2": 0.8579 }
+  },
+  "tuning_params": {
+    "Random Forest":    { "max_depth": 10, "max_features": 0.7, ... },
+    "Gradient Boosting": { "learning_rate": 0.05, "max_depth": 3, ... }
+  },
+  "features": ["gender","race_ethnicity","parental_level_of_education",
+               "lunch","test_preparation_course","reading_score","writing_score"]
+}</pre>
+  </div>
+
+  <!-- curl examples -->
+  <div class="card">
+    <h3>curl examples</h3>
+    <p>Test from your terminal:</p>
+    <pre>curl http://localhost:5000/api/models</pre>
+    <pre>curl -X POST http://localhost:5000/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gender": "male",
+    "race_ethnicity": "group D",
+    "parental_level_of_education": "high school",
+    "lunch": "free/reduced",
+    "test_preparation_course": "none",
+    "reading_score": 60,
+    "writing_score": 55
+  }'</pre>
+  </div>
+
+</div>
+
+<script>
+async function tryApi() {
+  const btn = document.querySelector('.try-btn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    const resp = await fetch('/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gender: 'female',
+        race_ethnicity: 'group C',
+        parental_level_of_education: "bachelor's degree",
+        lunch: 'standard',
+        test_preparation_course: 'completed',
+        reading_score: 75,
+        writing_score: 80
+      })
+    });
+    const data = await resp.json();
+    document.getElementById('api-result').style.display = 'block';
+    document.getElementById('api-output').textContent = JSON.stringify(data, null, 2);
+    btn.textContent = 'Send sample request';
+    btn.disabled = false;
+  } catch(e) {
+    document.getElementById('api-result').style.display = 'block';
+    document.getElementById('api-output').textContent = 'Error: Make sure Flask is running on localhost:5000';
+    btn.textContent = 'Send sample request';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
